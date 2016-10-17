@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace GenericRepository.Services
@@ -11,6 +12,13 @@ namespace GenericRepository.Services
         public IEnumerable<Customer> GetCustomers()
         {
             return Repository.GetAll<Customer>();
+        }
+
+        public async Task CreateAsync(Customer entity)
+        {
+            Repository.Create<Customer>(entity);
+
+            await Repository.SaveAsync();
         }
     }
 }

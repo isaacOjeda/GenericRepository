@@ -4,6 +4,7 @@ using GenericRepository.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -43,6 +44,25 @@ namespace GenericRepository.Controllers
                 .ToList();
 
             return View(customers);
+        }
+
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<ActionResult> Create(CustomerModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _customerService.CreateAsync(model.ToEntity());
+
+                return RedirectToAction("Index");
+            }
+            return View(model);
         }
     }
 }
