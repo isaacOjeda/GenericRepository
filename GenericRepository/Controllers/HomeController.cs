@@ -9,12 +9,12 @@ namespace GenericRepository.Controllers
 {
     public class HomeController : Controller
     {
-        protected readonly IRepository repo;
+        protected readonly IGenericRepository repo;
 
 
         public HomeController()
         {
-            this.repo = new EntityFrameworkRepository<NORTHWNDEntities>(new NORTHWNDEntities());
+            this.repo = new GenericRepository<NORTHWNDEntities>(new NORTHWNDEntities());
         }
 
         public ActionResult Index()

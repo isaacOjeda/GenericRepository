@@ -1,29 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace GenericRepository.Data
 {
-    public class EntityFrameworkReadOnlyRepository<TContext> : IReadOnlyRepository
+    public class GenericRepository<TContext> : IGenericRepository
         where TContext : DbContext
     {
         protected readonly TContext context;
 
-        public EntityFrameworkReadOnlyRepository(TContext context)
+        public GenericRepository(TContext context)
         {
             this.context = context;
         }
 
-        public virtual IEnumerable<TEntity> Get<TEntity>(
-            Expression<Func<TEntity, bool>> filter = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            string includeProperties = null,
-            int? skip = null,
-            int? take = null)
+        public virtual void Create<TEntity>(TEntity entity, string createdBy = null)
             where TEntity : class
+        {
+            context.Set<TEntity>().Add(entity);
+        }
+
+        public virtual void Delete<TEntity>(object id)
+            where TEntity : class
+        {
+            TEntity entity = context.Set<TEntity>().Find(id);
+            Delete(entity);
+        }
+
+        public virtual void Delete<TEntity>(TEntity entity)
+            where TEntity : class
+        {
+            var dbSet = context.Set<TEntity>();
+            if (context.Entry(entity).State == EntityState.Detached)
+            {
+                dbSet.Attach(entity);
+            }
+            dbSet.Remove(entity);
+        }
+
+        public virtual IEnumerable<TEntity> Get<TEntity>(
+                                   Expression<Func<TEntity, bool>> filter = null,
+           Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+           string includeProperties = null,
+           int? skip = null,
+           int? take = null)
+           where TEntity : class
         {
             return GetQueryable<TEntity>(filter, orderBy, includeProperties, skip, take).ToList();
         }
@@ -129,8 +154,41 @@ namespace GenericRepository.Data
             return await GetQueryable<TEntity>(filter, null, includeProperties).SingleOrDefaultAsync();
         }
 
+        public virtual void Save()
+        {
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (DbEntityValidationException e)
+            {
+                ThrowEnhancedValidationException(e);
+            }
+        }
+
+        public virtual Task SaveAsync()
+        {
+            try
+            {
+                return context.SaveChangesAsync();
+            }
+            catch (DbEntityValidationException e)
+            {
+                ThrowEnhancedValidationException(e);
+            }
+
+            return Task.FromResult(0);
+        }
+
+        public virtual void Update<TEntity>(TEntity entity, string modifiedBy = null)
+                                            where TEntity : class
+        {
+            context.Set<TEntity>().Attach(entity);
+            context.Entry(entity).State = EntityState.Modified;
+        }
+
         protected virtual IQueryable<TEntity> GetQueryable<TEntity>(
-                                                                                                                            Expression<Func<TEntity, bool>> filter = null,
+                                                                                                                                                    Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = null,
             int? skip = null,
@@ -167,6 +225,17 @@ namespace GenericRepository.Data
             }
 
             return query;
+        }
+
+        protected virtual void ThrowEnhancedValidationException(DbEntityValidationException e)
+        {
+            var errorMessages = e.EntityValidationErrors
+                    .SelectMany(x => x.ValidationErrors)
+                    .Select(x => x.ErrorMessage);
+
+            var fullErrorMessage = string.Join("; ", errorMessages);
+            var exceptionMessage = string.Concat(e.Message, " The validation errors are: ", fullErrorMessage);
+            throw new DbEntityValidationException(exceptionMessage, e.EntityValidationErrors);
         }
     }
 }

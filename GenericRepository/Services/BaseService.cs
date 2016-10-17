@@ -8,15 +8,15 @@ namespace GenericRepository.Services
 {
     public class BaseService
     {
-        private IRepository _repository;
+        private IGenericRepository _repository;
 
-        protected IRepository Repository
+        protected IGenericRepository Repository
         {
             get
             {
                 if (_repository == null)
                 {
-                    _repository = new EntityFrameworkRepository<NORTHWNDEntities>(new NORTHWNDEntities());
+                    _repository = new GenericRepository<NORTHWNDEntities>(new NORTHWNDEntities());
                 }
 
                 return _repository;

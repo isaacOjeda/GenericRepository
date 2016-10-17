@@ -63,10 +63,8 @@
     <Compile Include="Employee.cs">
       <DependentUpon>NorthwndModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="EntityFrameworkReadOnlyRepository.cs" />
-    <Compile Include="EntityFrameworkRepository.cs" />
-    <Compile Include="IReadOnlyRepository.cs" />
-    <Compile Include="IRepository.cs" />
+    <Compile Include="GenericRepository.cs" />
+    <Compile Include="IGenericRepository.cs" />
     <Compile Include="NorthwndModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

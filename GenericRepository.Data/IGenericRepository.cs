@@ -6,10 +6,19 @@ using System.Threading.Tasks;
 
 namespace GenericRepository.Data
 {
-    public interface IReadOnlyRepository
+    public interface IGenericRepository
     {
+        void Create<TEntity>(TEntity entity, string createdBy = null)
+            where TEntity : class;
+
+        void Delete<TEntity>(object id)
+            where TEntity : class;
+
+        void Delete<TEntity>(TEntity entity)
+            where TEntity : class;
+
         IEnumerable<TEntity> Get<TEntity>(
-            Expression<Func<TEntity, bool>> filter = null,
+                                    Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = null,
             int? skip = null,
@@ -29,6 +38,7 @@ namespace GenericRepository.Data
             int? skip = null,
             int? take = null)
             where TEntity : class;
+
         Task<IEnumerable<TEntity>> GetAsync<TEntity>(
             Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
@@ -68,7 +78,7 @@ namespace GenericRepository.Data
             where TEntity : class;
 
         TEntity GetOne<TEntity>(
-                                                                            Expression<Func<TEntity, bool>> filter = null,
+            Expression<Func<TEntity, bool>> filter = null,
             string includeProperties = null)
             where TEntity : class;
 
@@ -76,5 +86,12 @@ namespace GenericRepository.Data
             Expression<Func<TEntity, bool>> filter = null,
             string includeProperties = null)
             where TEntity : class;
+
+        void Save();
+
+        Task SaveAsync();
+
+        void Update<TEntity>(TEntity entity, string modifiedBy = null)
+                                            where TEntity : class;
     }
 }
